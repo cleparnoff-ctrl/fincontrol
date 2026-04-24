@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "email": { "type": "string", "format": "email", "description": "User email" },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "User role" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Financial expense record",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "string", "description": "Expense amount" },
+        "category": { "type": "string", "description": "Expense category" },
+        "date": { "type": "string", "format": "date", "description": "Expense date" },
+        "description": { "type": "string", "description": "Expense description" },
+        "userId": { "type": "string", "description": "Owner UID" }
+      },
+      "required": ["amount", "category", "date", "userId"]
+    },
+    "WhitelistEntry": {
+      "title": "WhitelistEntry",
+      "description": "Authorized user entry",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["ativo", "inativo"], "description": "Access status" }
+      },
+      "required": ["status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "UserProfile" },
+      "description": "User profiles"
+    },
+    "/lancamentos/{expenseId}": {
+      "schema": { "$ref": "Expense" },
+      "description": "User expenses"
+    },
+    "/whitelist/{email}": {
+      "schema": { "$ref": "WhitelistEntry" },
+      "description": "List of authorized emails"
+    }
+  }
+}
