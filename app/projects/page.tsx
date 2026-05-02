@@ -66,6 +66,30 @@ function ProjectsContent() {
       return;
     }
 
+    // --- INÍCIO DA TRAVA DE PLANO SAAS ---
+    if (auth.currentUser?.uid) {
+      try {
+        // Busca os dados da empresa atrelada a este usuário no banco
+        const qCompany = query(collection(db, 'companies'), where('userId', '==', auth.currentUser.uid));
+        const companySnapshot = await getDocsFromServer(qCompany);
+        
+        if (!companySnapshot.empty) {
+          const companyData = companySnapshot.docs[0].data();
+          
+          // A REGRA DE NEGÓCIO: Se for plano 'start' e já tiver 3 projetos, bloqueia!
+          if (companyData.plan_name === 'start' && projects.length >= 3) {
+            alert('Você atingiu o limite de 3 projetos do plano Start. Faça o upgrade para o Business para criar projetos ilimitados.');
+            return; // O 'return' encerra a função aqui e não deixa o código continuar
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao validar plano SaaS:", err);
+        setToast({ message: 'Erro ao validar sua assinatura.', type: 'error' });
+        return;
+      }
+    }
+    // --- FIM DA TRAVA DE PLANO SAAS ---
+
     const budgeted = parseFloat(newProject.budgeted.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.') || '0');
 
     const projectData = {
@@ -99,9 +123,6 @@ function ProjectsContent() {
     const seen = new Map<string, string>(); // title -> id
     const toDelete: string[] = [];
 
-    // Sort by date or just use the order in the array (assuming latest are later in the list if added sequentially)
-    // Actually, Firestore doesn't guarantee order unless we sort.
-    // Let's just find duplicates by title.
     projects.forEach(p => {
       if (seen.has(p.title)) {
         toDelete.push(p.id);
@@ -156,7 +177,7 @@ function ProjectsContent() {
       await updateProject(editingProject.id, projectData);
       setToast({ message: 'Projeto atualizado com sucesso!', type: 'success' });
       setEditingProject(null);
-      router.refresh(); // Ensure state refreshes
+      router.refresh(); 
     } catch (err: any) {
       console.error('Erro ao atualizar projeto no Firestore:', err);
       if (err.message === 'DUPLICATE_NAME') {
@@ -168,7 +189,6 @@ function ProjectsContent() {
   };
 
   const formatCurrency = (value: string) => {
-    // Basic formatting for input display
     const numbers = value.replace(/\D/g, '');
     const numberValue = parseInt(numbers, 10) / 100;
     if (isNaN(numberValue)) return '';
@@ -189,7 +209,6 @@ function ProjectsContent() {
   };
 
   const handleBudgetedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // We let user type raw numbers or formatted string, but store raw string to avoid complex parsing issues mid-typing
     const value = e.target.value;
     setEditingProject({ ...editingProject, budgeted: value });
   };
