@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import TopNav from '@/components/TopNav';
 import { DataProvider } from '@/lib/store';
+import AccessControl from '@/components/AccessControl';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta charSet="UTF-8" />
       </head>
       <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
+        <AccessControl/>
         <AuthProvider>
           <DataProvider>
             <Suspense fallback={null}>
