@@ -31,7 +31,6 @@ function ProjectsContent() {
     const loadProjects = async () => {
       if (auth.currentUser?.uid) {
         try {
-          // Aba Projetos: Deve buscar da coleção 'projects'
           const q = query(collection(db, 'projects'), where('userId', '==', auth.currentUser.uid));
           await getDocsFromServer(q);
         } catch (err) {
@@ -46,7 +45,6 @@ function ProjectsContent() {
 
   useEffect(() => {
     if (searchParams?.get('new') === 'true') {
-      // Clean up the URL
       const params = new URLSearchParams(searchParams?.toString() || '');
       params.delete('new');
       router.replace(`${pathname}?${params.toString()}`);
@@ -66,20 +64,17 @@ function ProjectsContent() {
       return;
     }
 
-    // --- INÍCIO DA TRAVA DE PLANO SAAS ---
     if (auth.currentUser?.uid) {
       try {
-        // Busca os dados da empresa atrelada a este usuário no banco
         const qCompany = query(collection(db, 'companies'), where('userId', '==', auth.currentUser.uid));
         const companySnapshot = await getDocsFromServer(qCompany);
         
         if (!companySnapshot.empty) {
           const companyData = companySnapshot.docs[0].data();
           
-          // A REGRA DE NEGÓCIO: Se for plano 'start' e já tiver 3 projetos, bloqueia!
           if (companyData.plan_name === 'start' && projects.length >= 3) {
             alert('Você atingiu o limite de 3 projetos do plano Start. Faça o upgrade para o Business para criar projetos ilimitados.');
-            return; // O 'return' encerra a função aqui e não deixa o código continuar
+            return; 
           }
         }
       } catch (err) {
@@ -88,7 +83,6 @@ function ProjectsContent() {
         return;
       }
     }
-    // --- FIM DA TRAVA DE PLANO SAAS ---
 
     const budgeted = parseFloat(newProject.budgeted.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.') || '0');
 
@@ -120,7 +114,7 @@ function ProjectsContent() {
   };
 
   const handleCleanupDuplicates = async () => {
-    const seen = new Map<string, string>(); // title -> id
+    const seen = new Map<string, string>(); 
     const toDelete: string[] = [];
 
     projects.forEach(p => {
@@ -260,7 +254,6 @@ function ProjectsContent() {
 
   return (
     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-      {/* Toast Notification */}
       {toast && (
         <div className={cn(
           "fixed top-24 right-8 z-[100] px-6 py-3 rounded-2xl shadow-2xl border animate-in slide-in-from-right-8 duration-300",
@@ -269,7 +262,6 @@ function ProjectsContent() {
           <p className="text-sm font-bold">{toast.message}</p>
         </div>
       )}
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
         <div>
           <span className="text-primary text-xs font-bold uppercase tracking-[0.2em]">Portfólio de Projetos</span>
@@ -312,7 +304,6 @@ function ProjectsContent() {
         </div>
       </div>
 
-      {/* Modals */}
       <Modal 
         isOpen={isNewProjectOpen} 
         onClose={() => setIsNewProjectOpen(false)} 
@@ -409,7 +400,6 @@ function ProjectsContent() {
         </motion.div>
       )}
 
-      {/* Edit Project Modal */}
       <Modal 
         isOpen={!!editingProject} 
         onClose={() => setEditingProject(null)} 
@@ -489,7 +479,6 @@ function ProjectsContent() {
         )}
       </div>
 
-      {/* Section: Data Table for Detailed Review */}
       <div className="mt-12 bg-surface-container-low rounded-[1.5rem] overflow-hidden border border-outline-variant/5">
         <div className="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
           <h3 className="text-xl font-bold">Auditoria Abrangente de Portfólio</h3>
